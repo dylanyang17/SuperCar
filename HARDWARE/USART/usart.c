@@ -139,7 +139,7 @@ void USART1_IRQHandler(void)                	//串口1中断服务程序
 	if(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)
 	{
 		Res =USART_ReceiveData(USART1);	//读取接收到的数据
-			printf("\r\nreceived data:%2x\r\n", Res);
+	//		printf("\r\nreceived data:%2x\r\n", Res);
 		if(Res == 0x21)
 		{
 			LED1 = !LED1;
@@ -183,8 +183,9 @@ void USART2_IRQHandler(void)                	//串口2中断服务程序
 	if(USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)
 	{
 		Res =USART_ReceiveData(USART2);	//读取接收到的数据
-			printf("\r\nreceived data:%2x\r\n", Res);
-	/*	if(Res == 0x21)
+			//printf("\r\nUSART2 received data: %c\r\n", Res);
+		printf("%c", Res);
+		/*	if(Res == 0x21)
 		{
 			LED1 = !LED1;
 		}*/

@@ -65,25 +65,26 @@ void myDelay(u8 sec){  //由于原本的delay函数不靠谱，此处进行循环调用
 void ESP8266_Init(u8 usartNum){	
 	while((USART1->SR & 0x40) == 0);//清空原有数据，否则会出错
 	while((USART2->SR & 0x40) == 0);
-	sendStr("AT\r\n",usartNum) ;
+/*	sendStr("AT\r\n",usartNum) ;
 	myDelay(1);
 	sendStr("AT+CWMODE=3\r\n",usartNum) ;
 	myDelay(2) ;
 	sendStr("AT+RST\r\n",usartNum) ;
-	myDelay(3) ;
+	myDelay(10) ;*/
+	myDelay(1) ;
 	sendStr("AT+CWJAP=\"333B\",\"yyrdxiaokeai\"\r\n",usartNum) ;
-	myDelay(3) ;
-	sendStr("AT+CIPSTART=\"TCP\",\"192.168.1.104\",20000\r\n",usartNum) ;
+	myDelay(10) ;
+	sendStr("AT+CIPSTART=\"TCP\",\"192.168.0.104\",20000\r\n",usartNum) ;
 	myDelay(1) ;
 }
 
 void GPIO_init(){
 	GPIO_InitTypeDef GPIO_InitStructure ;
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_6;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_6 |  GPIO_Pin_7;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz ;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP ;
 	GPIO_Init(GPIOA, &GPIO_InitStructure) ;
-	GPIO_SetBits(GPIOA, GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_6) ;
+	GPIO_SetBits(GPIOA, GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_6 |  GPIO_Pin_7) ;
 }
 
 int main(void)
