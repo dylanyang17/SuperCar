@@ -38,7 +38,7 @@ u8 at_sipserver[] = {0x41, 0x54, 0x2B, 0x43, 0x49, 0x50, 0x53, 0x45, 0x52, 0x56,
 u16 getLen(char *s){
 	u16 ret=0 ;
 	while(s[ret++]!='\0') ;
-	return ret ;
+	return ret-1 ;
 }
 		 
 void sendStr(char *s, u8 usartNum){
@@ -48,28 +48,42 @@ void sendStr(char *s, u8 usartNum){
 			USART1->DR = s[i];//"AT\r\n"
 			while((USART1->SR & 0x40) == 0);//等待发送完毕
 		}
-		if(usartNum==2){
+		else if(usartNum==2){
 			USART2->DR = s[i];//"AT\r\n"
 			while((USART2->SR & 0x40) == 0);//等待发送完毕
 		}
 	}
 }
 		 
-void ESP8266_Init(void){	
-	int i = 0;
+void myDelay(u8 sec){  //由于原本的delay函数不靠谱，此处进行循环调用
+	u8 i;
+	for(i=0 ; i<sec ; ++i){
+		delay_ms(1000) ;
+	}
+}
+
+void ESP8266_Init(u8 usartNum){	
 	while((USART1->SR & 0x40) == 0);//清空原有数据，否则会出错
-	while((USART2->SR & 0x40) == 0);//清空原有数据，否则会出错
-	sendStr("I'm YYR!",1) ;
-	sendStr("AT\r\n",1) ;
-	delay_ms(1000);
-	sendStr("AT+CWMODE=3\r\n",1) ;
-	delay_ms(1000);
-	sendStr("AT+RST\r\n",1) ;
-	delay_ms(2000);
-	sendStr("AT+CWJAP=\"333B\",\"yyrdxiaokeai\"\r\n",1) ;
-	delay_ms(3000);
-	sendStr("AT+CIPSTART=\"TCP\",\"192.168.1.104\",20000\r\n",1) ;
-	delay_ms(700);
+	while((USART2->SR & 0x40) == 0);
+	sendStr("AT\r\n",usartNum) ;
+	myDelay(1);
+	sendStr("AT+CWMODE=3\r\n",usartNum) ;
+	myDelay(2) ;
+	sendStr("AT+RST\r\n",usartNum) ;
+	myDelay(3) ;
+	sendStr("AT+CWJAP=\"333B\",\"yyrdxiaokeai\"\r\n",usartNum) ;
+	myDelay(3) ;
+	sendStr("AT+CIPSTART=\"TCP\",\"192.168.1.104\",20000\r\n",usartNum) ;
+	myDelay(1) ;
+}
+
+void GPIO_init(){
+	GPIO_InitTypeDef GPIO_InitStructure ;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_6;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz ;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP ;
+	GPIO_Init(GPIOA, &GPIO_InitStructure) ;
+	GPIO_SetBits(GPIOA, GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_6) ;
 }
 
 int main(void)
@@ -80,10 +94,11 @@ int main(void)
 	delay_init();	    	 //延时函数初始化	
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);// 设置中断优先级分组2
 	uart_init(115200);	 //串口初始化115200
+	GPIO_init() ;
 //	LED_Init();		  	 //初始化与LED连接的硬件接口 
 //	TIM_PWM_Init(899,0);//不分频。PWM频率=72000/(7199+1)=10Khz
 //	set_pwm(899,2);
-	ESP8266_Init();
+	ESP8266_Init(2);
 	
 	while(1)
 	{

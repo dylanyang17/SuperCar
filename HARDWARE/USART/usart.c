@@ -184,10 +184,10 @@ void USART2_IRQHandler(void)                	//串口2中断服务程序
 	{
 		Res =USART_ReceiveData(USART2);	//读取接收到的数据
 			printf("\r\nreceived data:%2x\r\n", Res);
-		if(Res == 0x21)
+	/*	if(Res == 0x21)
 		{
 			LED1 = !LED1;
-		}
+		}*/
 		/*if((USART_RX_STA&0x8000)==0)//接收未完成
 			{
 			if(USART_RX_STA&0x4000)//接收到了0x0d
