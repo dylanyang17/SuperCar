@@ -1,27 +1,27 @@
 #include "Kalman.h"
 
 
-void Kalman_Filter(float Accel,        float Gyro ,KalmanCountData * Kalman_Struct)
+extern void Kalman_Filter(float Accel,        float Gyro ,KalmanCountData * Kalman_Struct)
 {
-     //ÍÓÂİÒÇ»ı·Ö½Ç¶È£¨ÏÈÑé¹À¼Æ£©
+     //é™€èºä»ªç§¯åˆ†è§’åº¦ï¼ˆå…ˆéªŒä¼°è®¡ï¼‰
     Kalman_Struct -> Angle_Final += (Gyro - Kalman_Struct -> Q_bias) * dt; 
                 
-    //ÏÈÑé¹À¼ÆÎó²îĞ­·½²îµÄÎ¢·Ö
+    //å…ˆéªŒä¼°è®¡è¯¯å·®åæ–¹å·®çš„å¾®åˆ†
     Kalman_Struct -> Pdot[0] = Q_angle - Kalman_Struct -> PP[0][1] - Kalman_Struct -> PP[1][0]; 
     Kalman_Struct -> Pdot[1] = - Kalman_Struct -> PP[1][1];
     Kalman_Struct -> Pdot[2] = - Kalman_Struct -> PP[1][1];
     Kalman_Struct -> Pdot[3] = Q_gyro;
                 
-    //ÏÈÑé¹À¼ÆÎó²îĞ­·½²îµÄ»ı·Ö
+    //å…ˆéªŒä¼°è®¡è¯¯å·®åæ–¹å·®çš„ç§¯åˆ†
     Kalman_Struct -> PP[0][0] += Kalman_Struct -> Pdot[0] * dt;   
     Kalman_Struct -> PP[0][1] += Kalman_Struct -> Pdot[1] * dt;   
     Kalman_Struct -> PP[1][0] += Kalman_Struct -> Pdot[2] * dt;
     Kalman_Struct -> PP[1][1] += Kalman_Struct -> Pdot[3] * dt;
                 
-    //¼ÆËã½Ç¶ÈÆ«²î
+    //è®¡ç®—è§’åº¦åå·®
     Kalman_Struct -> Angle_err = Accel - Kalman_Struct -> Angle_Final;        
                 
-    //¿¨¶ûÂüÔöÒæ¼ÆËã
+    //å¡å°”æ›¼å¢ç›Šè®¡ç®—
     Kalman_Struct -> PCt_0 = C_0 * Kalman_Struct -> PP[0][0];
     Kalman_Struct -> PCt_1 = C_0 * Kalman_Struct -> PP[1][0];
                 
@@ -30,7 +30,7 @@ void Kalman_Filter(float Accel,        float Gyro ,KalmanCountData * Kalman_Stru
     Kalman_Struct -> K_0 = Kalman_Struct -> PCt_0 / Kalman_Struct -> E;
     Kalman_Struct -> K_1 = Kalman_Struct -> PCt_1 / Kalman_Struct -> E;
                 
-    //ºóÑé¹À¼ÆÎó²îĞ­·½²î¼ÆËã
+    //åéªŒä¼°è®¡è¯¯å·®åæ–¹å·®è®¡ç®—
     Kalman_Struct -> t_0 = Kalman_Struct -> PCt_0;
     Kalman_Struct -> t_1 = C_0 * Kalman_Struct -> PP[0][1];
 
@@ -39,18 +39,18 @@ void Kalman_Filter(float Accel,        float Gyro ,KalmanCountData * Kalman_Stru
     Kalman_Struct -> PP[1][0] -= Kalman_Struct -> K_1 * Kalman_Struct -> t_0;
     Kalman_Struct -> PP[1][1] -= Kalman_Struct -> K_1 * Kalman_Struct -> t_1;
 		
-		//ºóÑé¹À¼Æ×îÓÅ½Ç¶ÈÖµ
+		//åéªŒä¼°è®¡æœ€ä¼˜è§’åº¦å€¼
     Kalman_Struct -> Angle_Final += Kalman_Struct -> K_0 * Kalman_Struct -> Angle_err;
     
-		//¸üĞÂ×îÓÅ¹À¼ÆÖµµÄÆ«²î
+		//æ›´æ–°æœ€ä¼˜ä¼°è®¡å€¼çš„åå·®
 		Kalman_Struct -> Q_bias        += Kalman_Struct -> K_1 * Kalman_Struct -> Angle_err;
     
-		//¸üĞÂ×îÓÅ½ÇËÙ¶ÈÖµ
+		//æ›´æ–°æœ€ä¼˜è§’é€Ÿåº¦å€¼
 		Kalman_Struct -> Gyro_Final   = Gyro - Kalman_Struct -> Q_bias;
 }
 
-//Kalman Filter ÖĞ¼äÁ¿³õÊ¼»¯
-void Kalman_Filter_Init(KalmanCountData * Kalman_Struct)
+//Kalman Filter ä¸­é—´é‡åˆå§‹åŒ–
+extern void Kalman_Filter_Init(KalmanCountData * Kalman_Struct)
 {
         Kalman_Struct -> Angle_err                 = 0;
         Kalman_Struct -> Q_bias                         = 0;
