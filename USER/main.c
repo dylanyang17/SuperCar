@@ -24,6 +24,28 @@ void sendStr(char *s, u8 usartNum){
 		}
 	}
 }
+
+u8 bits[10] ;
+
+void sendNum(u16 num, u8 usartNum){ //Output in decimal form.
+	u8 length=0 , i=0 ;
+	bits[1]=0 ;
+	while(num){
+		bits[++length] = num%10 ;
+		num/=10 ;
+	}
+	if(length==0) length=1 ;
+	for(i=length ; i>=1 ; --i){
+		if(usartNum==1){
+			USART1->DR = bits[i]+'0';
+			while((USART1->SR & 0x40) == 0);
+		}
+		else if(usartNum==2){
+			USART2->DR = bits[i]+'0';
+			while((USART2->SR & 0x40) == 0);
+		}
+	}
+}
 		 
 void myDelay(u8 sec){  //The origin delay function is undependable, so I just use simple loop to delay more time.
 	u8 i;
@@ -32,9 +54,13 @@ void myDelay(u8 sec){  //The origin delay function is undependable, so I just us
 	}
 }
 
-void ESP8266_Init(u8 usartNum){	
+void clearData(){
 	while((USART1->SR & 0x40) == 0);//清空原有数据，否则会出错
 	while((USART2->SR & 0x40) == 0);
+}
+
+void ESP8266_Init(u8 usartNum){	
+	clearData() ;
 /*	sendStr("AT\r\n",usartNum) ;
 	myDelay(1);
 	sendStr("AT+CWMODE=3\r\n",usartNum) ;
@@ -44,7 +70,7 @@ void ESP8266_Init(u8 usartNum){
 	myDelay(1) ;
 	sendStr("AT+CWJAP=\"333B\",\"yyrdxiaokeai\"\r\n",usartNum) ;
 	myDelay(20) ;
-	sendStr("AT+CIPSTART=\"TCP\",\"192.168.0.104\",20000\r\n",usartNum) ;
+	sendStr("AT+CIPSTART=\"TCP\",\"192.168.0.109\",20000\r\n",usartNum) ;
 	myDelay(1) ;
 }
 
@@ -61,8 +87,10 @@ typedef struct{
 	u16 x, y;
 }position;
 
+u8 sendFlag = 0 ;
 u8 startFlag = 0;
 u8 sucFlag = 0 ;
+u8 beginFlag = 0 ;
 u8 message[105] = {0} ;
 u8 bufferLen = 0 ;
 u8 buffer[205] = {0} ;
@@ -100,6 +128,15 @@ void swapU16(u16 *a, u16 *b){
 	u16 tmp = *a ;
 	*a = *b ;
 	*b = tmp ;
+}
+
+void printInfo(){
+	sendStr("gameStatus: ", 2) , sendNum(gameStatus, 2) ;
+	sendStr("\r\nnowRound: ", 2) , sendNum(nowRound, 2) ;
+	sendStr("\r\nmyPosition.x: ", 2) , sendNum(myPosition.x, 2) ;
+	sendStr("\r\nmyPosition.y: ", 2) , sendNum(myPosition.y, 2) ;
+	sendStr("\r\nopPosition.x: ", 2) , sendNum(opPosition.x, 2) ;
+	sendStr("\r\nopPosition.y: ", 2) , sendNum(opPosition.y, 2) ;
 }
 
 void decode(){
@@ -159,6 +196,7 @@ void decode(){
 	}*/
 }
 
+
 int main(void)
  {	
 	
@@ -172,34 +210,46 @@ int main(void)
 //	LED_Init();		  	 //初始化与LED连接的硬件接口 
 //	TIM_PWM_Init(899,0);//不分频。PWM频率=72000/(7199+1)=10Khz
 //	set_pwm(899,2);
-	ESP8266_Init(2);
+	ESP8266_Init(1);
 	startFlag=1;
-	
+	clearData() ;
 	//////////////////////(debug) printf可能出现问题，最好改用寄存器操作（可以使用sendStr函数）
 	while(1)
 	{
 		/*while(nowLen<bufferLen-1){
-				USART1->DR = buffer[nowLen++];
-				while((USART1->SR & 0x40) == 0);//等待发送完毕
+				USART2->DR = buffer[nowLen++];
+				while((USART2->SR & 0x40) == 0);//等待发送完毕
 		}*/
+		if(sendFlag){
+			USART2->DR = sendFlag;
+			while((USART2->SR & 0x40) == 0);//等待发送完毕
+			sendFlag=0 ;
+		}
+		if(beginFlag){
+			sendStr("Beginning...\r\n", 2) ;
+			beginFlag=0 ;
+		}
 		if(outputFlag){
-			sendStr("output:", 1) ;
+			/*sendStr("output:", 2) ;
 			for(i=0; i<outputFlag ; ++i){
-				USART1->DR = buffer[i];
-				while((USART1->SR & 0x40) == 0);//等待发送完毕
+				USART2->DR = buffer[i];
+				while((USART2->SR & 0x40) == 0);//等待发送完毕
 			}
-			sendStr("\r\n", 1) ;
+			sendStr("\r\n", 2) ;*/
 			outputFlag=0 ;
 		}
 		if(sucFlag){
 			sucFlag=0 ;
-			sendStr("\r\nReceive successfully !!\r\n", 1) ;
+			sendStr("\r\nReceive successfully !!\r\n", 2) ;
 			for(i = 0; i < 64; i++)
 			{
 				message[i] = buffer[i];
+				USART2->DR = message[i];
+				while((USART2->SR & 0x40) == 0);//等待发送完毕
 			}
 			//处理  
-			//decode() ;
+			decode() ;
+			printInfo() ;
 		}
 	}	 
 }

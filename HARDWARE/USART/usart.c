@@ -134,12 +134,21 @@ void uart_init(u32 bound){
 	USART_Cmd(USART2, ENABLE); 										//使能串口2
 }
 
-void USART1_IRQHandler(void)                	//串口1中断服务程序
+extern u8 sendFlag ;
+extern u8 startFlag ;
+extern u8 message[105] ;
+extern u8 beginFlag ;
+extern u8 sucFlag ;
+extern u8 bufferLen ;
+extern u8 buffer[205] ;
+extern u8 outputFlag ;
+
+void USART2_IRQHandler(void)                	//串口2中断服务程序
 	{
 	u8 Res = 0;
-	if(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)
+	if(USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)
 	{
-		Res =USART_ReceiveData(USART1);	//读取接收到的数据
+		Res =USART_ReceiveData(USART2);	//读取接收到的数据 
 	//		printf("\r\nreceived data:%2x\r\n", Res);
 		if(Res == 0x21)
 		{
@@ -177,13 +186,6 @@ void USART1_IRQHandler(void)                	//串口1中断服务程序
      } 
 
 } 
-	
-extern u8 startFlag ;
-extern u8 message[105] ;
-extern u8 sucFlag ;
-extern u8 bufferLen ;
-extern u8 buffer[205] ;
-extern u8 outputFlag ;
 
 u8 checkBeginning(void)
 {
@@ -202,21 +204,22 @@ u8 checkBeginning(void)
 }
 
 
-void USART2_IRQHandler(void)                	//串口2中断服务程序
+void USART1_IRQHandler(void)                	//串口1中断服务程序
 {
 	u8 Res = 0;
 	u8 i=0 ;
-	if(USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)
+	if(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)
 	{
-		Res =USART_ReceiveData(USART2);	//读取接收到的数据
-			//printf("\r\nUSART2 received data: %c\r\n", Res);
-		if(!startFlag) { printf("%c", Res); return ; }
+		Res =USART_ReceiveData(USART1);	//读取接收到的数据
+			//printf("\r\nUSART1 received data: %c\r\n", Res);
+		if(!startFlag) { sendFlag=Res ; return ; }
 	//	else printf("%02X", Res);
 		buffer[bufferLen++] = Res ;
 	//	printf("%c", Res);
 		if(checkBeginning() == 1){
 			bufferLen = 0 ;
-			printf("\nBeginning..\n") ;
+			beginFlag = 1 ;
+		//	printf("\nBeginning..\n") ;
 		}
 		if(bufferLen >= 2 
 				&& bufferLen < 64 
