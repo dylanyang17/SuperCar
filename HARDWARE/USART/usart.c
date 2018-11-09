@@ -1,5 +1,6 @@
 #include "usart.h"
 #include "led.h"
+#include "sys.h"
 #include "control.h"
 ////////////////////////////////////////////////////////////////////////////////// 	 
 //如果使用ucos,则包括下面的头文件即可.
@@ -177,37 +178,65 @@ void USART1_IRQHandler(void)                	//串口1中断服务程序
 
 } 
 	
+extern u8 startFlag ;
+extern u8 message[105] ;
+extern u8 sucFlag ;
+extern u8 bufferLen ;
+extern u8 buffer[205] ;
+extern u8 outputFlag ;
+
+u8 checkBeginning(void)
+{
+	//这里是"+IPD," 有的Socket调试工具会自动发送
+	if(bufferLen >= 8
+		&& buffer[bufferLen - 8] == 0x2B
+		&& buffer[bufferLen - 7] == 0x49
+		&& buffer[bufferLen - 6] == 0x50
+		&& buffer[bufferLen - 5] == 0x44
+		&& buffer[bufferLen - 4] == 0x2C
+		/*&& buffer[bufferLen - 3] == 0x36
+		&& buffer[bufferLen - 2] == 0x34
+		&& buffer[bufferLen - 1] == 0x3A*/)
+		return 1;
+	else return 0;
+}
+
+
 void USART2_IRQHandler(void)                	//串口2中断服务程序
-	{
+{
 	u8 Res = 0;
+	u8 i=0 ;
 	if(USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)
 	{
 		Res =USART_ReceiveData(USART2);	//读取接收到的数据
 			//printf("\r\nUSART2 received data: %c\r\n", Res);
-		printf("%c", Res);
-		/*	if(Res == 0x21)
+		if(!startFlag) { printf("%c", Res); return ; }
+	//	else printf("%02X", Res);
+		buffer[bufferLen++] = Res ;
+	//	printf("%c", Res);
+		if(checkBeginning() == 1){
+			bufferLen = 0 ;
+			printf("\nBeginning..\n") ;
+		}
+		if(bufferLen >= 2 
+				&& bufferLen < 64 
+				&& buffer[bufferLen-2]==0x0D 
+				&& buffer[bufferLen-1]==0x0A)
 		{
-			LED1 = !LED1;
-		}*/
-		/*if((USART_RX_STA&0x8000)==0)//接收未完成
+			outputFlag = bufferLen;
+			bufferLen = 0;
+		//	printf("\nFalse Data\n") ;
+		}
+		
+		if(bufferLen >= 64){
+			if(buffer[62]==0x0D
+				&& buffer[63]==0x0A)
 			{
-			if(USART_RX_STA&0x4000)//接收到了0x0d
-				{
-				if(Res!=0x0a)USART_RX_STA=0;//接收错误,重新开始
-				else USART_RX_STA|=0x8000;	//接收完成了 
-				}
-			else //还没收到0X0D
-				{	
-				if(Res==0x0d)USART_RX_STA|=0x4000;
-				else
-					{
-					USART_RX_BUF[USART_RX_STA&0X3FFF]=Res ;
-					USART_RX_STA++;
-					if(USART_RX_STA>(USART_REC_LEN-1))USART_RX_STA=0;//接收数据错误,重新开始接收	  
-					}		 
-				}
-			} */  		 
-     } 
+				sucFlag = 1 ;
+			}
+			bufferLen = 0;
+		}
+  } 
 
 } 
 	

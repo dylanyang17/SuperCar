@@ -73,7 +73,7 @@ void ESP8266_Init(u8 usartNum){
 	myDelay(10) ;*/
 	myDelay(1) ;
 	sendStr("AT+CWJAP=\"333B\",\"yyrdxiaokeai\"\r\n",usartNum) ;
-	myDelay(10) ;
+	myDelay(20) ;
 	sendStr("AT+CIPSTART=\"TCP\",\"192.168.0.104\",20000\r\n",usartNum) ;
 	myDelay(1) ;
 }
@@ -87,10 +87,99 @@ void GPIO_init(){
 	GPIO_SetBits(GPIOA, GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_6 |  GPIO_Pin_7) ;
 }
 
+typedef struct{
+	u16 x, y;
+}position;
+
+u8 startFlag = 0;
+u8 sucFlag = 0 ;
+u8 message[105] = {0} ;
+u8 bufferLen = 0 ;
+u8 buffer[205] = {0} ;
+u8 outputFlag = 0 ;
+
+// Infomation from host computer
+
+//!!! Caution !!! In this definition, my car is A and op's car is B !
+
+u8 gameStatus = 0; 				// 0: Not	beginning   1: Running   2: Pause
+u16 nowRound = 0;
+position myPosition, opPosition ;
+u8 passengerNum = 0; 
+u8 passengerStatus[6] = {0}; //Index is between 1 and 5.  0: Not on the car  1: On my car   2: On op's car
+												// Here should be modified to figure out who is A.
+position passengerBeginPos[6] , passengerEndPos[6];
+u8 myFoul = 0, opFoul = 0;
+u16 myScore = 0, opScore = 0;
+
+//////
+
+void swapPosition(position *a, position *b){
+	position tmp = *a ;
+	*a = *b ;
+	*b = tmp ;
+}
+
+void swapU8(u8 *a, u8 *b){
+	u8 tmp = *a ;
+	*a = *b ;
+	*b = tmp ;
+}
+
+void swapU16(u16 *a, u16 *b){
+	u16 tmp = *a ;
+	*a = *b ;
+	*b = tmp ;
+}
+
+void decode(){
+	u8 i, index, bit ;
+	gameStatus=message[0]>>6 ;
+	nowRound=(((u16)(message[0]&((1<<6)-1)))<<8) | message[1] ;
+	
+	myPosition.x=(message[2]>>7) << 8 ;
+	myPosition.y=(message[2]>>6) << 8 ;
+	opPosition.x=(message[2]>>5) << 8 ;
+	opPosition.y=(message[2]>>4) << 8 ;
+	index
+	
+	myPosition.x|=message[5], myPosition.y|=message[6] ;
+	opPosition.x|=message[7], opPosition.y|=message[8] ;
+	passengerNum = message[9] >> 2 ;
+	passengerStatus[1] |= ((message[9]			) & 3) ;
+	passengerStatus[2] |= ((message[10] >> 6) & 3) ;
+	passengerStatus[3] |= ((message[10] >> 4) & 3) ;
+	passengerStatus[4] |= ((message[10] >> 2) & 3) ;
+	passengerStatus[5] |= ((message[10]     ) & 3) ;
+	for(i=1;i<=5;++i){
+		passengerBeginPos[i].x = message[11+((i-1)<<2)] ;
+		passengerBeginPos[i].y = message[12+((i-1)<<2)] ;
+		passengerEndPos[i].x   = message[13+((i-1)<<2)] ;
+		passengerEndPos[i].y   = message[14+((i-1)<<2)] ;
+	}
+	myFoul = message[31], opFoul = message[32] ;
+	myScore = (((u16)message[33])<<8)|message[34] ;
+	opScore = (((u16)message[35])<<8)|message[36] ;
+	/*if() {    // Determine who is A to decide whether swap or not.
+		swapPosition(&myPosition, &opPosition) ;
+		swapU8(&myFoul, &opFoul) ;
+		swapU16(&myScore, &opScore) ;
+		for(i=1 ; i<=5 ; i++){
+			if(passengerStatus[i]==1)
+				passengerStatus[i]=2;
+			else if(passengerStatus[i]==2)
+				passengerStatus[i]=1 ;
+		}
+	
+		// Maybe not be finished...
+	}*/
+}
+
 int main(void)
  {	
 	
 	u16 times=0; 
+	u8 nowLen=0 , i=0 ;
 	 
 	delay_init();	    	 //延时函数初始化	
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);// 设置中断优先级分组2
@@ -100,27 +189,33 @@ int main(void)
 //	TIM_PWM_Init(899,0);//不分频。PWM频率=72000/(7199+1)=10Khz
 //	set_pwm(899,2);
 	ESP8266_Init(2);
+	startFlag=1;
 	
+	//////////////////////(debug) printf可能出现问题，最好改用寄存器操作（可以使用sendStr函数）
 	while(1)
 	{
-		if(USART_RX_STA&0x8000)
-		{					   
-			/*len=USART_RX_STA&0x3fff;//得到此次接收到的数据长度
-			printf("\r\nreceived data:\r\n");
-			for(t=0;t<len;t++)
-			{
-				USART1->DR=USART_RX_BUF[t];
-				while((USART1->SR&0X40)==0);//等待发送结束
-			}*/
-			printf("\r\n\r\n");//插入换行
-			USART_RX_STA=0;
+		/*while(nowLen<bufferLen-1){
+				USART1->DR = buffer[nowLen++];
+				while((USART1->SR & 0x40) == 0);//等待发送完毕
+		}*/
+		if(outputFlag){
+			sendStr("output:", 1) ;
+			for(i=0; i<outputFlag ; ++i){
+				USART1->DR = buffer[i];
+				while((USART1->SR & 0x40) == 0);//等待发送完毕
+			}
+			sendStr("\r\n", 1) ;
+			outputFlag=0 ;
 		}
-		else
-		{
-			times++;
-	//		if(times%100==0)printf("Please input a character;\r\n");  
-	//		if(times%100==0)LED0=!LED0;//闪烁LED,提示系统正在运行.
-			delay_ms(10);
+		if(sucFlag){
+			sucFlag=0 ;
+			sendStr("\r\nReceive successfully !!\r\n", 1) ;
+			for(i = 0; i < 64; i++)
+			{
+				message[i] = buffer[i];
+			}
+			//处理  
+			//decode() ;
 		}
 	}	 
 }
