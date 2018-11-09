@@ -28,6 +28,6 @@ typedef struct
 
 }KalmanCountData;
 
-void Kalman_Filter(float Accel,        float Gyro ,KalmanCountData * Kalman_Struct);
-void Kalman_Filter_Init(KalmanCountData * Kalman_Struct);	//Initiate Kalman Filter
+extern void Kalman_Filter(float Accel,        float Gyro ,KalmanCountData * Kalman_Struct);
+extern void Kalman_Filter_Init(KalmanCountData * Kalman_Struct);	//Initiate Kalman Filter
 #endif
