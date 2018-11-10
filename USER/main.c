@@ -131,7 +131,7 @@ void swapU16(u16 *a, u16 *b){
 }
 
 void printInfo(){
-	sendStr("gameStatus: ", 2) , sendNum(gameStatus, 2) ;
+	sendStr("\r\ngameStatus: ", 2) , sendNum(gameStatus, 2) ;
 	sendStr("\r\nnowRound: ", 2) , sendNum(nowRound, 2) ;
 	sendStr("\r\nmyPosition.x: ", 2) , sendNum(myPosition.x, 2) ;
 	sendStr("\r\nmyPosition.y: ", 2) , sendNum(myPosition.y, 2) ;
