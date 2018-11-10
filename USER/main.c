@@ -85,7 +85,7 @@ void GPIO_init(){
 
 typedef struct{
 	u16 x, y;
-}position;
+}Position;
 
 u8 sendFlag = 0 ;
 u8 startFlag = 0;
@@ -102,18 +102,18 @@ u8 outputFlag = 0 ;
 
 u8 gameStatus = 0; 				// 0: Not	beginning   1: Running   2: Pause
 u16 nowRound = 0;
-position myPosition, opPosition ;
+Position myPosition, opPosition ;
 u8 passengerNum = 0; 
 u8 passengerStatus[6] = {0}; //Index is between 1 and 5.  0: Not on the car  1: On my car   2: On op's car
 												// Here should be modified to figure out who is A.
-position passengerBeginPos[6] , passengerEndPos[6];
+Position passengerBeginPos[6] , passengerEndPos[6];
 u8 myFoul = 0, opFoul = 0;
 u16 myScore = 0, opScore = 0;
 
 //////
 
-void swapPosition(position *a, position *b){
-	position tmp = *a ;
+void swapPosition(Position *a, Position *b){
+	Position tmp = *a ;
 	*a = *b ;
 	*b = tmp ;
 }
@@ -173,10 +173,10 @@ void decode(){
 	passengerStatus[4] |= ((message[10] >> 2) & 3) ;
 	passengerStatus[5] |= ((message[10]     ) & 3) ;
 	for(i=1;i<=5;++i){
-		passengerBeginPos[i].x = message[11+((i-1)<<2)] ;
-		passengerBeginPos[i].y = message[12+((i-1)<<2)] ;
-		passengerEndPos[i].x   = message[13+((i-1)<<2)] ;
-		passengerEndPos[i].y   = message[14+((i-1)<<2)] ;
+		passengerBeginPos[i].x |= message[11+((i-1)<<2)] ;
+		passengerBeginPos[i].y |= message[12+((i-1)<<2)] ;
+		passengerEndPos[i].x   |= message[13+((i-1)<<2)] ;
+		passengerEndPos[i].y   |= message[14+((i-1)<<2)] ;
 	}
 	myFoul = message[31], opFoul = message[32] ;
 	myScore = (((u16)message[33])<<8)|message[34] ;
