@@ -2,8 +2,12 @@
 #include "delay.h"
 #include "sys.h"
 #include "usart.h"
-#include "pwm.h"
-#include "control.h"
+#include "pwm4.h"
+//#include "control.h"
+
+//This two definition may swap some time, so we may have to change it during competition.
+#define dark 0			//the returned value of infrared sensor when it detects dark line.
+#define light 1			//the returned value of infrared sensor when it does not detect dark line.
 
 u16 getLen(char *s){
 	u16 ret=0 ;
@@ -55,7 +59,7 @@ void myDelay(u8 sec){  //The origin delay function is undependable, so I just us
 }
 
 void clearData(){
-	while((USART1->SR & 0x40) == 0);//Çå¿ÕÔ­ÓĞÊı¾İ£¬·ñÔò»á³ö´í
+	while((USART1->SR & 0x40) == 0);//æ¸…ç©ºåŸæœ‰æ•°æ®ï¼Œå¦åˆ™ä¼šå‡ºé”™
 	while((USART2->SR & 0x40) == 0);
 }
 
@@ -196,33 +200,116 @@ void decode(){
 	}*/
 }
 
+//The configuration of PWM logic ouput and infrared vcc/gnd
+//PC6 PC7 controls left wheel
+//PC10 PC11 control right wheel
+//PA1 PA2 are vcc/gnd of left infrared sensor
+//PA6 PA5 are vcc/gnd of right infrared sensor
+void GPIO_Config(void){
+	GPIO_InitTypeDef     GPIO_InitStructure;
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_6 | GPIO_Pin_5;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_Init(GPIOA, &GPIO_InitStructure);
+	
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7 | GPIO_Pin_10 | GPIO_Pin_11;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_Init(GPIOC, &GPIO_InitStructure);
+	
+	GPIO_SetBits(GPIOA, GPIO_Pin_1);
+	GPIO_ResetBits(GPIOA, GPIO_Pin_2);
+	GPIO_SetBits(GPIOA, GPIO_Pin_6);
+	GPIO_ResetBits(GPIOA, GPIO_Pin_5);
+	
+	GPIO_ResetBits(GPIOC, GPIO_Pin_10);
+	GPIO_ResetBits(GPIOC, GPIO_Pin_11);
+	GPIO_ResetBits(GPIOC, GPIO_Pin_6);
+	GPIO_ResetBits(GPIOC, GPIO_Pin_7);
+}
+
+//The initiation of infrared sensor. PA3 & PA7 are the D0 port of left and right sensors, respectively.
+void HW_Init(){
+	GPIO_InitTypeDef GPIO_InitStructure;
+	
+	GPIO_InitStructure.GPIO_Pin=GPIO_Pin_3 | GPIO_Pin_7;
+	GPIO_InitStructure.GPIO_Mode=GPIO_Mode_IPU;
+	GPIO_InitStructure.GPIO_Speed=GPIO_Speed_50MHz;
+	GPIO_Init(GPIOA,&GPIO_InitStructure);
+}
+//KEEP MOVING!
+void forward(){
+	GPIO_ResetBits(GPIOC, GPIO_Pin_10);//right forward
+	GPIO_SetBits(GPIOC, GPIO_Pin_11);
+	GPIO_ResetBits(GPIOC, GPIO_Pin_6);//left forward
+	GPIO_SetBits(GPIOC, GPIO_Pin_7);
+}
+
+//å·¦è½®åœè½¬
+void lwheelstop(){
+	GPIO_ResetBits(GPIOC, GPIO_Pin_10);
+	GPIO_ResetBits(GPIOC, GPIO_Pin_11);
+}
+
+//å³è½®åœè½¬
+void rwheelstop(){
+	GPIO_ResetBits(GPIOC, GPIO_Pin_6);
+	GPIO_ResetBits(GPIOC, GPIO_Pin_7);
+}
+
+//Trace é»‘çº¿
+void trace(u8 leftblack, u8 rightblack){
+	if(leftblack == dark && rightblack == light){
+		rwheelstop();
+	}
+	else if(rightblack == dark && leftblack == light){
+		lwheelstop();
+	}
+	else{
+		forward();
+	}
+}
+
+
 
 int main(void)
  {	
 	
 	u16 times=0; 
 	u8 nowLen=0 , i=0 ;
+	u8 leftblack = 0, rightblack = 0;
+	u16 pwm_left = 380, pwm_right = 350;		//åˆå§‹pwmçš„å‚æ•°ï¼Œè¶Šå°è½¬åŠ¨è¶Šå¿«
 	 
-	delay_init();	    	 //ÑÓÊ±º¯Êı³õÊ¼»¯	
-	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);// ÉèÖÃÖĞ¶ÏÓÅÏÈ¼¶·Ö×é2
-	uart_init(115200);	 //´®¿Ú³õÊ¼»¯115200
+	delay_init();	    	 //å»¶æ—¶å‡½æ•°åˆå§‹åŒ–	
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);// è®¾ç½®ä¸­æ–­ä¼˜å…ˆçº§åˆ†ç»„2
+	uart_init(115200);	 //ä¸²å£åˆå§‹åŒ–115200
 	GPIO_init() ;
-//	LED_Init();		  	 //³õÊ¼»¯ÓëLEDÁ¬½ÓµÄÓ²¼ş½Ó¿Ú 
-//	TIM_PWM_Init(899,0);//²»·ÖÆµ¡£PWMÆµÂÊ=72000/(7199+1)=10Khz
+//	LED_Init();		  	 //åˆå§‹åŒ–ä¸LEDè¿æ¥çš„ç¡¬ä»¶æ¥å£ 
+//	TIM_PWM_Init(899,0);//ä¸åˆ†é¢‘ã€‚PWMé¢‘ç‡=72000/(7199+1)=10Khz
 //	set_pwm(899,2);
+	TIM4_PWM_Init(899,0);			//Initiate PWM output
+	HW_Init();
 	ESP8266_Init(1);
 	startFlag=1;
 	clearData() ;
-	//////////////////////(debug) printf¿ÉÄÜ³öÏÖÎÊÌâ£¬×îºÃ¸ÄÓÃ¼Ä´æÆ÷²Ù×÷£¨¿ÉÒÔÊ¹ÓÃsendStrº¯Êı£©
+	
+	TIM_SetCompare1(TIM4,pwm_left);		//ch1è¾“å‡ºpwm
+	TIM_SetCompare2(TIM4,pwm_right);	//ch2è¾“å‡ºpwm
+	
+	delay_ms(500);
+	forward();
+	//////////////////////(debug) printfå¯èƒ½å‡ºç°é—®é¢˜ï¼Œæœ€å¥½æ”¹ç”¨å¯„å­˜å™¨æ“ä½œï¼ˆå¯ä»¥ä½¿ç”¨sendStrå‡½æ•°ï¼‰
 	while(1)
 	{
 		/*while(nowLen<bufferLen-1){
 				USART2->DR = buffer[nowLen++];
-				while((USART2->SR & 0x40) == 0);//µÈ´ı·¢ËÍÍê±Ï
+				while((USART2->SR & 0x40) == 0);//ç­‰å¾…å‘é€å®Œæ¯•
 		}*/
 		if(sendFlag){
 			USART2->DR = sendFlag;
-			while((USART2->SR & 0x40) == 0);//µÈ´ı·¢ËÍÍê±Ï
+			while((USART2->SR & 0x40) == 0);//ç­‰å¾…å‘é€å®Œæ¯•
 			sendFlag=0 ;
 		}
 		if(beginFlag){
@@ -233,7 +320,7 @@ int main(void)
 			/*sendStr("output:", 2) ;
 			for(i=0; i<outputFlag ; ++i){
 				USART2->DR = buffer[i];
-				while((USART2->SR & 0x40) == 0);//µÈ´ı·¢ËÍÍê±Ï
+				while((USART2->SR & 0x40) == 0);//ç­‰å¾…å‘é€å®Œæ¯•
 			}
 			sendStr("\r\n", 2) ;*/
 			outputFlag=0 ;
@@ -245,12 +332,16 @@ int main(void)
 			{
 				message[i] = buffer[i];
 				USART2->DR = message[i];
-				while((USART2->SR & 0x40) == 0);//µÈ´ı·¢ËÍÍê±Ï
+				while((USART2->SR & 0x40) == 0);//ç­‰å¾…å‘é€å®Œæ¯•
 			}
-			//´¦Àí  
+			//å¤„ç†  
 			decode() ;
 			printInfo() ;
 		}
+		//æ¥æ”¶å·¦å³ä¼ æ„Ÿå™¨ä¿¡å·
+		leftblack = GPIO_ReadInputDataBit(GPIOA,GPIO_Pin_3);
+		rightblack = GPIO_ReadInputDataBit(GPIOA,GPIO_Pin_7);
+		trace(leftblack, rightblack);
 	}	 
 }
  
