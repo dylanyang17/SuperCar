@@ -70,7 +70,7 @@ void ESP8266_Init(u8 usartNum){
 	myDelay(1) ;
 	sendStr("AT+CWJAP=\"333B\",\"yyrdxiaokeai\"\r\n",usartNum) ;
 	myDelay(20) ;
-	sendStr("AT+CIPSTART=\"TCP\",\"192.168.0.109\",20000\r\n",usartNum) ;
+	sendStr("AT+CIPSTART=\"TCP\",\"192.168.0.104\",20000\r\n",usartNum) ;
 	myDelay(1) ;
 }
 
