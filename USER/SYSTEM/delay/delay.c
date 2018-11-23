@@ -7,10 +7,6 @@
 #define dark 0			//the returned value of infrared sensor when it detects dark line.
 #define light 1			//the returned value of infrared sensor when it does not detect dark line.
 
-u8 roads [12][2] = {{1,4},{4,1},{1,2},{2,3},{4,3},{3,4},{3,2},{2,3},{4,2},{2,4},{1,2},{2,1}};
-
-u16 pwm_left, pwm_right;
-
 u16 getLen(char *s){
 	u16 ret=0 ;
 	while(s[ret++]!='\0') ;
@@ -66,40 +62,27 @@ void clearData(){
 }
 
 void ESP8266_Init(u8 usartNum){	
-	/*clearData() ;
- 	sendStr("AT\r\n",usartNum) ;
+	clearData() ;
+/*	sendStr("AT\r\n",usartNum) ;
 	myDelay(1);
 	sendStr("AT+CWMODE=3\r\n",usartNum) ;
 	myDelay(2) ;
 	sendStr("AT+RST\r\n",usartNum) ;
-	myDelay(4) ;*/
+	myDelay(10) ;*/
 	myDelay(1) ;
-	sendStr("AT+CWJAP=\"EDC20\",\"12345678\"\r\n",usartNum) ;
-	//sendStr("AT+CWJAP=\"333B\",\"yyrdxiaokeai\"\r\n",usartNum) ;
-	myDelay(10) ;
-	sendStr("AT+CIPSTART=\"TCP\",\"192.168.1.116\",20000\r\n",usartNum);
-	//sendStr("AT+CIPSTART=\"TCP\",\"192.168.0.104\",20000\r\n",usartNum) ;
+	sendStr("AT+CWJAP=\"333B\",\"yyrdxiaokeai\"\r\n",usartNum) ;
+	myDelay(20) ;
+	sendStr("AT+CIPSTART=\"TCP\",\"192.168.0.109\",20000\r\n",usartNum) ;
 	myDelay(1) ;
-	sendStr("AT+CIPSTART=\"TCP\",\"192.168.1.116\",20000\r\n",usartNum);
-	myDelay(1);
 }
 //The initiatoin of GPIO for the vccs of wifi module.
 void GPIO_init(){
-	/*GPIO_InitTypeDef GPIO_InitStructure ;
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
+	GPIO_InitTypeDef GPIO_InitStructure ;
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_10 |  GPIO_Pin_11;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz ;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz ;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP ;
 	GPIO_Init(GPIOB, &GPIO_InitStructure) ;
-	GPIO_SetBits(GPIOB, GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_10 |  GPIO_Pin_11) ;*/
-	
-	GPIO_InitTypeDef GPIO_InitStructure ;
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_6 |  GPIO_Pin_7;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz ;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP ;
-	GPIO_Init(GPIOA, &GPIO_InitStructure) ;
-	GPIO_SetBits(GPIOA, GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_6 |  GPIO_Pin_7) ;
+	GPIO_SetBits(GPIOB, GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_10 |  GPIO_Pin_11) ;
 }
 
 typedef struct{
@@ -218,79 +201,60 @@ void decode(){
 //The configuration of PWM logic ouput and infrared vcc/gnd
 //PC6 PC7 controls left wheel
 //PC10 PC11 control right wheel
-//PB5 PB4 are vcc/gnd of left infrared sensor
-//PB106 PB11 are vcc/gnd of right infrared sensor
+//PA1 PA2 are vcc/gnd of left infrared sensor
+//PA6 PA5 are vcc/gnd of right infrared sensor
 void GPIO_Config(void){
 	GPIO_InitTypeDef     GPIO_InitStructure;
-	
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
-	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_14 | GPIO_Pin_15 |   GPIO_Pin_6 | GPIO_Pin_7 |GPIO_Pin_12 | GPIO_Pin_11  ;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-	GPIO_Init(GPIOC, &GPIO_InitStructure);
-	
-	
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1 | GPIO_Pin_2 ;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-	GPIO_Init(GPIOB, &GPIO_InitStructure);
-	
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
-	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_1 | GPIO_Pin_0 | GPIO_Pin_11 | GPIO_Pin_12 ;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_6 | GPIO_Pin_5;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
 	
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7 | GPIO_Pin_10 | GPIO_Pin_11;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_Init(GPIOC, &GPIO_InitStructure);
 	
-	GPIO_ResetBits(GPIOA, GPIO_Pin_11);
-	GPIO_ResetBits(GPIOA, GPIO_Pin_12);
+	GPIO_SetBits(GPIOA, GPIO_Pin_1);
+	GPIO_ResetBits(GPIOA, GPIO_Pin_2);
+	GPIO_SetBits(GPIOA, GPIO_Pin_6);
+	GPIO_ResetBits(GPIOA, GPIO_Pin_5);
+	
+	GPIO_ResetBits(GPIOC, GPIO_Pin_10);
 	GPIO_ResetBits(GPIOC, GPIO_Pin_11);
-	GPIO_ResetBits(GPIOC, GPIO_Pin_12);
-	
-	
-	GPIO_ResetBits(GPIOC, GPIO_Pin_15);
-	GPIO_SetBits(GPIOC, GPIO_Pin_14);
-	GPIO_ResetBits(GPIOB, GPIO_Pin_1);
-	GPIO_SetBits(GPIOB, GPIO_Pin_2);
-	GPIO_SetBits(GPIOA, GPIO_Pin_0);
-	GPIO_ResetBits(GPIOA, GPIO_Pin_1);
+	GPIO_ResetBits(GPIOC, GPIO_Pin_6);
+	GPIO_ResetBits(GPIOC, GPIO_Pin_7);
 }
 
 //The initiation of infrared sensor. PA3 & PA7 are the D0 port of left and right sensors, respectively.
 void HW_Init(){
 	GPIO_InitTypeDef GPIO_InitStructure;
 	
-	GPIO_InitStructure.GPIO_Pin=GPIO_Pin_5 | GPIO_Pin_0| GPIO_Pin_9;
+	GPIO_InitStructure.GPIO_Pin=GPIO_Pin_3 | GPIO_Pin_7;
 	GPIO_InitStructure.GPIO_Mode=GPIO_Mode_IPU;
 	GPIO_InitStructure.GPIO_Speed=GPIO_Speed_50MHz;
-	GPIO_Init(GPIOB,&GPIO_InitStructure);
+	GPIO_Init(GPIOA,&GPIO_InitStructure);
 }
-
-u16 pwm_left = 420, pwm_right = 440;		//??pwm???,??????
-
 //KEEP MOVING!
 void forward(){
-	TIM_SetCompare1(TIM4,pwm_left);		//ch1??pwm
-	TIM_SetCompare2(TIM4,pwm_right);	//ch2??pwm
-	GPIO_SetBits(GPIOC, GPIO_Pin_12);
-	GPIO_ResetBits(GPIOC, GPIO_Pin_11);
-	GPIO_ResetBits(GPIOA, GPIO_Pin_11);//left forward
-	GPIO_SetBits(GPIOA, GPIO_Pin_12);
+	GPIO_ResetBits(GPIOC, GPIO_Pin_10);//right forward
+	GPIO_SetBits(GPIOC, GPIO_Pin_11);
+	GPIO_ResetBits(GPIOC, GPIO_Pin_6);//left forward
+	GPIO_SetBits(GPIOC, GPIO_Pin_7);
 }
 
 //????
 void lwheelstop(){
-	TIM_SetCompare2(TIM4,380);		//ch1??pwm
-	GPIO_ResetBits(GPIOC, GPIO_Pin_12);
+	GPIO_ResetBits(GPIOC, GPIO_Pin_10);
 	GPIO_ResetBits(GPIOC, GPIO_Pin_11);
 }
 
 //????
 void rwheelstop(){
-	TIM_SetCompare1(TIM4,380);		//ch1??pwm
-	GPIO_ResetBits(GPIOA, GPIO_Pin_11);
-	GPIO_ResetBits(GPIOA, GPIO_Pin_12);
+	GPIO_ResetBits(GPIOC, GPIO_Pin_6);
+	GPIO_ResetBits(GPIOC, GPIO_Pin_7);
 }
 
 //Trace ??
@@ -301,70 +265,45 @@ void trace(u8 leftblack, u8 rightblack){
 	else if(rightblack == dark && leftblack == light){
 		lwheelstop();
 	}
-	if(leftblack == rightblack){
+	else{
 		forward();
 	}
 }
 
-void stop(){
-	rwheelstop();
-	lwheelstop();
-}
 
-void turnright(){
-	int i, j;
-	TIM_SetCompare1(TIM4,pwm_right - 50);		//ch1??pwm
-	TIM_SetCompare2(TIM4,pwm_right);
-	for(i;i<1000;i++){
-		for(j; j<10000; j++){
-		}
-	}
-	TIM_SetCompare1(TIM4,pwm_left);		//ch1??pwm
-	TIM_SetCompare2(TIM4,pwm_right);	//ch2??pwm
-	return;
-}
 
 int main(void)
  {	
 	
 	u16 times=0; 
 	u8 nowLen=0 , i=0 ;
-	u8 leftblack = 0, rightblack = 0, frontblack = 0;
-
+	u8 leftblack = 0, rightblack = 0;
+	u16 pwm_left = 380, pwm_right = 350;		//??pwm???,??????
 	 
-	
 	delay_init();	    	 //???????	
-	  
-	
-	TIM4_PWM_Init(899,0);			//Initiate PWM ,output
-	GPIO_Config();
-	HW_Init();
-	
 	//NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);// ?????????2
+	//uart_init(115200);	 //?????115200
 	GPIO_init() ;
-	uart_init(115200);	 //?????115200
+
+	TIM4_PWM_Init(899,0);			//Initiate PWM output
+	HW_Init();
 	//ESP8266_Init(1);
-	
-	 
-	
 	startFlag=1;
-	clearData() ;
+	//clearData() ;
 	
 	TIM_SetCompare1(TIM4,pwm_left);		//ch1??pwm
 	TIM_SetCompare2(TIM4,pwm_right);	//ch2??pwm
 	
-	
-	//delay_ms(500);
+	delay_ms(500);
 	forward();
 	//////////////////////(debug) printf??????,?????????(????sendStr??)
 	while(1)
 	{
-			//printInfo() ;
 		/*while(nowLen<bufferLen-1){
 				USART2->DR = buffer[nowLen++];
 				while((USART2->SR & 0x40) == 0);//??????
 		}*/
-		/*if(sendFlag){
+		if(sendFlag){
 			USART2->DR = sendFlag;
 			while((USART2->SR & 0x40) == 0);//??????
 			sendFlag=0 ;
@@ -374,6 +313,12 @@ int main(void)
 			beginFlag=0 ;
 		}
 		if(outputFlag){
+			/*sendStr("output:", 2) ;
+			for(i=0; i<outputFlag ; ++i){
+				USART2->DR = buffer[i];
+				while((USART2->SR & 0x40) == 0);//??????
+			}
+			sendStr("\r\n", 2) ;*/
 			outputFlag=0 ;
 		}
 		if(sucFlag){
@@ -388,33 +333,11 @@ int main(void)
 			//??  
 			decode() ;
 			printInfo() ;
-		}*/
-		
-		
-		leftblack = GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_5);
-		rightblack = GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_0);
-		frontblack = GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_9);
-		
-		
-		//if(frontblack == dark){
-		//	turnright();
-		//}
-		//else{
+		}
+		//?????????
+		leftblack = GPIO_ReadInputDataBit(GPIOA,GPIO_Pin_3);
+		rightblack = GPIO_ReadInputDataBit(GPIOA,GPIO_Pin_7);
 		trace(leftblack, rightblack);
-		//}
-		/*
-		//if(gameStatus == 1){
-			//forward();
-		if(leftblack == dark && rightblack == light){
-		lwheelstop();
-	}
-	else if(rightblack == dark && leftblack == light){
-		rwheelstop();
-	}
-	if(leftblack == rightblack){
-		forward();
-	}
-	//if(gameStatus != 1) stop();*/
-}
+	}	 
 }
 

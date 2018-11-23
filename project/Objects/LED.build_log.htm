@@ -1,0 +1,107 @@
+<html>
+<body>
+<pre>
+<h1>µVision Build Log</h1>
+<h2>Tool Versions:</h2>
+IDE-Version: ¦ÌVision V5.14.0.0
+Copyright (C) 2015 ARM Ltd and ARM Germany GmbH. All rights reserved.
+License Information: ryx ryx, ryx, LIC=X96DY-ITL45-BSNYX-H75GT-7KGD6-HFBQ0
+ 
+Tool Versions:
+Toolchain:       MDK-ARM Standard  Version: 5.14.0.0
+Toolchain Path:  C:\Appications\Keil_v5\ARM\ARMCC\Bin
+C Compiler:      Armcc.exe V5.05 update 1 (build 106)
+Assembler:       Armasm.exe V5.05 update 1 (build 106)
+Linker/Locator:  ArmLink.exe V5.05 update 1 (build 106)
+Library Manager: ArmAr.exe V5.05 update 1 (build 106)
+Hex Converter:   FromElf.exe V5.05 update 1 (build 106)
+CPU DLL:         SARMCM3.DLL V5.14.0.0
+Dialog DLL:      DARMSTM.DLL V1.65.0.0
+Target DLL:      STLink\ST-LINKIII-KEIL_SWO.dll V2.0.14.0_KEIL
+Dialog DLL:      TARMSTM.DLL V1.64.0.0
+ 
+<h2>Project:</h2>
+C:\Users\Lflame\Desktop\supersupercar\project\LED.uvprojx
+Project File Date:  11/22/2018
+
+<h2>Output:</h2>
+Build target 'LED'
+compiling main.c...
+..\User\main.c(180): warning:  #186-D: pointless comparison of unsigned integer with zero
+                if(bit<0) {
+..\User\main.c(318): warning:  #174-D: expression has no effect
+        for(i;i<1000;i++){
+..\User\main.c(319): warning:  #174-D: expression has no effect
+                for(j; j<10000; j++){
+..\User\main.c(330): warning:  #177-D: variable "times" was declared but never referenced
+        u16 times=0; 
+..\User\main.c(331): warning:  #177-D: variable "nowLen" was declared but never referenced
+        u8 nowLen=0 , i=0 ;
+..\User\main.c(331): warning:  #177-D: variable "i" was declared but never referenced
+        u8 nowLen=0 , i=0 ;
+..\User\main.c(332): warning:  #550-D: variable "frontblack" was set but never used
+        u8 leftblack = 0, rightblack = 0, frontblack = 0;
+..\User\main.c: 7 warnings, 0 errors
+linking...
+Program Size: Code=3700 RO-data=336 RW-data=104 ZI-data=1392  
+FromELF: creating hex file...
+".\Objects\LED.axf" - 0 Error(s), 7 Warning(s).
+
+<h2>Software Packages used:</h2>
+
+Package Vendor: ARM
+                http://www.keil.com/pack/ARM.CMSIS.4.2.0.pack
+                ARM::CMSIS:CORE:3.40.0
+                CMSIS (Cortex Microcontroller Software Interface Standard)
+   * Component: CORE Version: 3.40.0
+
+Package Vendor: Keil
+                http://www.keil.com/pack/Keil.STM32F1xx_DFP.2.2.0.pack
+                Keil::Device:StdPeriph Drivers:Flash:3.5.0
+                STMicroelectronics STM32F1 Series Device Support, Drivers and Examples
+   * Component: Flash Version: 3.5.0
+   * Component: Startup Version: 1.0.0
+   * Component: Framework Version: 3.5.1
+   * Component: RCC Version: 3.5.0
+   * Component: GPIO Version: 3.5.0
+
+<h2>Collection of Component include folders:</h2>
+  C:\Users\Lflame\Desktop\supersupercar\project\RTE
+  C:\Users\Lflame\Desktop\supersupercar\project\RTE\Device\STM32F103RC
+  C:\Appications\Keil_v5\ARM\PACK\ARM\CMSIS\4.2.0\CMSIS\Include
+  C:\Appications\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0
+  C:\Appications\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\Device\Include
+  C:\Appications\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\Device\StdPeriph_Driver\inc
+
+<h2>Collection of Component Files used:</h2>
+
+   * Component: ARM::CMSIS:CORE:3.40.0
+      Source file:   CMSIS\UserCodeTemplates\ARM\ITM_Retarget.c
+
+   * Component: Keil::Device:StdPeriph Drivers:Flash:3.5.0
+      Include file:  Device\StdPeriph_Driver\inc\stm32f10x_flash.h
+      Source file:   Device\StdPeriph_Driver\src\stm32f10x_flash.c
+
+   * Component: Keil::Device:Startup:1.0.0
+      Include file:  RTE_Driver\Config\RTE_Device.h
+      Source file:   Device\Source\ARM\startup_stm32f10x_hd.s
+      Source file:   Device\Source\ARM\STM32F1xx_OPT.s
+      Source file:   Device\Source\system_stm32f10x.c
+
+   * Component: Keil::Device:StdPeriph Drivers:Framework:3.5.1
+      Source file:   Device\StdPeriph_Driver\templates\stm32f10x_conf.h
+      Source file:   Device\StdPeriph_Driver\src\misc.c
+      Include file:  Device\StdPeriph_Driver\templates\stm32f10x_it.h
+      Include file:  Device\StdPeriph_Driver\inc\misc.h
+      Source file:   Device\StdPeriph_Driver\templates\stm32f10x_it.c
+
+   * Component: Keil::Device:StdPeriph Drivers:RCC:3.5.0
+      Include file:  Device\StdPeriph_Driver\inc\stm32f10x_rcc.h
+      Source file:   Device\StdPeriph_Driver\src\stm32f10x_rcc.c
+
+   * Component: Keil::Device:StdPeriph Drivers:GPIO:3.5.0
+      Include file:  Device\StdPeriph_Driver\inc\stm32f10x_gpio.h
+      Source file:   Device\StdPeriph_Driver\src\stm32f10x_gpio.c
+</pre>
+</body>
+</html>

@@ -2,32 +2,32 @@
 #define __KALMAN_H__
 
 
-#define Q_angle                        0.001       ////è§’åº¦è¿‡ç¨‹å™ªå£°çš„åæ–¹å·®
-#define Q_gyro                        0.003        ////è§’é€Ÿåº¦è¿‡ç¨‹å™ªå£°çš„åæ–¹å·®
-#define R_angle                        0.5                //æµ‹é‡å™ªå£°çš„åæ–¹å·®
-#define dt                                0.01            //é‡‡æ ·é¢‘ç‡
+#define Q_angle                        0.001       ////½Ç¶È¹ı³ÌÔëÉùµÄĞ­·½²î
+#define Q_gyro                        0.003        ////½ÇËÙ¶È¹ı³ÌÔëÉùµÄĞ­·½²î
+#define R_angle                        0.05                //²âÁ¿ÔëÉùµÄĞ­·½²î
+#define dt                                0.01            //²ÉÑùÆµÂÊ
 #define C_0                                1
 
 
 
 typedef struct
 {
-        float                                Q_bias;            //æœ€ä¼˜ä¼°è®¡å€¼çš„åå·®
-        float                                Angle_err;         //å®æµ‹è§’åº¦ä¸é™€èºä»ªç§¯åˆ†è§’åº¦çš„å·®å€¼
+        float                                Q_bias;            //×îÓÅ¹À¼ÆÖµµÄÆ«²î
+        float                                Angle_err;         //Êµ²â½Ç¶ÈÓëÍÓÂİÒÇ»ı·Ö½Ç¶ÈµÄ²îÖµ
         float                                PCt_0;                                
         float                                PCt_1; 
-        float                                E;                 //è®¡ç®—çš„è¿‡ç¨‹é‡
-        float                                K_0;               //å«æœ‰å¡å°”æ›¼å¢ç›Šçš„å¦å¤–ä¸€ä¸ªå‡½æ•°
-        float                                K_1;                //å«æœ‰å¡å°”æ›¼å¢ç›Šçš„å‡½æ•°ï¼Œç”¨äºè®¡ç®—æœ€ä¼˜ä¼°è®¡å€¼çš„åå·®
+        float                                E;                 //¼ÆËãµÄ¹ı³ÌÁ¿
+        float                                K_0;               //º¬ÓĞ¿¨¶ûÂüÔöÒæµÄÁíÍâÒ»¸öº¯Êı
+        float                                K_1;                //º¬ÓĞ¿¨¶ûÂüÔöÒæµÄº¯Êı£¬ÓÃÓÚ¼ÆËã×îÓÅ¹À¼ÆÖµµÄÆ«²î
         float                                t_0;                                
         float                                t_1;
-        float                                Pdot[4];            //è¿‡ç¨‹åæ–¹å·®çŸ©é˜µçš„å¾®åˆ†çŸ©é˜µ
-        float                                PP[2][2];           //åæ–¹å·® covariance
-        float                                Angle_Final;        //åéªŒä¼°è®¡æœ€ä¼˜è§’åº¦å€¼
-        float                                Gyro_Final;        //åéªŒä¼°è®¡æœ€ä¼˜è§’é€Ÿåº¦å€¼
+        float                                Pdot[4];            //¹ı³ÌĞ­·½²î¾ØÕóµÄÎ¢·Ö¾ØÕó
+        float                                PP[2][2];           //Ğ­·½²î covariance
+        float                                Angle_Final;        //ºóÑé¹À¼Æ×îÓÅ½Ç¶ÈÖµ
+        float                                Gyro_Final;        //ºóÑé¹À¼Æ×îÓÅ½ÇËÙ¶ÈÖµ
 
 }KalmanCountData;
 
-extern void Kalman_Filter(float Accel,        float Gyro ,KalmanCountData * Kalman_Struct);
-extern void Kalman_Filter_Init(KalmanCountData * Kalman_Struct);	//Initiate Kalman Filter
+void Kalman_Filter(float Accel,        float Gyro ,KalmanCountData * Kalman_Struct);
+void Kalman_Filter_Init(KalmanCountData * Kalman_Struct);	//Initiate Kalman Filter
 #endif

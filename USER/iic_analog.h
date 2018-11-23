@@ -10,8 +10,8 @@
 #define IIC_GPIO (GPIOC)
 #define IIC_GOIO_SDA (GPIOC)
 #define IIC_GPIO_SCL (GPIOC)
-#define IIC_SDA (GPIO_Pin_2)
-#define IIC_SCL (GPIO_Pin_1)
+#define IIC_SDA (GPIO_Pin_13)
+#define IIC_SCL (GPIO_Pin_14)
 /*********************************************************************************/
 
 
