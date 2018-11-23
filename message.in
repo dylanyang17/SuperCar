@@ -1,0 +1,24 @@
+GameStatus: 1
+Round: 1
+AX:0   AY:0
+BX:100   BY:100
+XFirstS: 1  YFirstS:13
+XFirstT: 1  YFirstT:13
+XSecondS: 2  YSecondS: 10
+XSecondT: 2  YSecondT: 10
+XThirdS: 1  YThirdS: 120
+XThirdT: 1  YThirdT: 120
+XFourthS: 10  YFourthS: 20
+XFourthT: 10  YFourthT: 20
+XFifthS: 1  YFifthS: 100
+XFifthT: 1  YFifthT: 100
+Passenger Num: 1
+StatusFirst: 0
+StatusSecond: 0
+StatusThird: 0
+StatusFourth: 0
+StatusFifth: 0
+AFoul: 0
+BFoul: 0
+AScore: 0
+BScore: 0
