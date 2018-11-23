@@ -12,7 +12,7 @@ XFourthS: 10  YFourthS: 20
 XFourthT: 10  YFourthT: 20
 XFifthS: 1  YFifthS: 100
 XFifthT: 1  YFifthT: 100
-Passenger Num: 1
+PassengerNum: 1
 StatusFirst: 0
 StatusSecond: 0
 StatusThird: 0
@@ -22,3 +22,4 @@ AFoul: 0
 BFoul: 0
 AScore: 0
 BScore: 0
+

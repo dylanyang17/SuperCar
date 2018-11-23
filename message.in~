@@ -18,4 +18,8 @@ StatusSecond: 0
 StatusThird: 0
 StatusFourth: 0
 StatusFifth: 0
+AFoul: 0
+BFoul: 0
+AScore: 0
+BScore: 0
 

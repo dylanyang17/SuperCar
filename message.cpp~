@@ -4,7 +4,7 @@
 #include<algorithm>
 using namespace std;
 
-void readNum(int &x){
+void reads(int &x){
 	x=0 ;
 	char c =(char)getchar();
 	while(c<'0'||c>'9'){
@@ -15,8 +15,22 @@ void readNum(int &x){
 	}
 }
 
+void printHexOne(int a){  //aΪ4λ
+	printf("%x",a) ;
+}
+
+void printHex(int a){  //aΪ8λ
+	printHexOne(a>>4) ;
+	printHexOne(a) ;
+}
+
+int GameStatus, Round, AX, AY, BX, BY, XFirstS, YFirstS, XFirstT,YFirstT,XSecondS,YSecondS,XSecondT,YSecondT,XThirdS,YThirdS,XThirdT,YThirdT,XFourthS,YFourthS,XFourthT,YFourthT,XFifthS,YFifthS,XFifthT,YFifthT ;
+int PassengerNum, StatusFirst, StatusSecond, StatusThird, StatusFourth, StatusFifth, AFoul, BFoul, AScore, BScore ;
+
 int main(){
 	freopen("message.in","r",stdin) ;
 	freopen("message.out","w",stdout) ;
-
+	reads(GameStatus) , reads(Round), reads(AX) , reads(AY) , reads(BX), reads(BY), reads(XFirstS), reads(YFirstS),  reads(XFirstT), reads(YFirstT),  reads(XSecondS), reads(YSecondS),  reads(XSecondT), reads(YSecondT),  reads(XThirdS), reads(YThirdS),  reads(XThirdT), reads(YThirdT),  reads(XFourthS), reads(YFourthS),  reads(XFourthT) , reads(YFourthT),  reads(XFifthS), reads(YFifthS),  reads(XFifthT), reads(YFifthT) ;
+	reads(PassengerNum) , reads(StatusFirst) , reads(StatusSecond) , reads(StatusThird) , reads(StatusFourth) , reads(StatusFifth) , reads(AFoul) , reads(BFoul) , reads(AScore) , reads(BScore) ;
+	return 0 ;
 }
